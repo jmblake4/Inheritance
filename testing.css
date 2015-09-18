@@ -1,0 +1,45 @@
+* {
+  margin: 0;
+  padding: 0;	
+}
+
+#word-container {
+  font-size: 28px;
+  letter-spacing: 3px;
+}
+
+.highlight {
+  background-color: yellow;
+}
+
+.highlight-red {
+	background-color: #ff9999;
+}
+
+.keyboard-container {
+  margin-top: 200px;
+}
+
+#next-letter {
+  font-size: 30px;  
+}
+
+.keys-row {
+  margin-top: 40px;
+  padding: 10px 0;
+}
+
+#words-typed {
+  font-size: 20px;
+}
+.glyphicon-ok {
+  color: #1DA237
+}
+
+.glyphicon-remove {
+  color : #CD2626
+}
+
+.letter {
+	display: inline-block;
+}
