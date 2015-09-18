@@ -1,3 +1,7 @@
+.button {
+	display: inline-block;
+}
+
 .car {
 	background-color: #00ff00;
 	color: #00ff00;
