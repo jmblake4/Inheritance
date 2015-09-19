@@ -5,8 +5,8 @@ var tankCount = 0;
 
 function makeNewPosition(){
     // Get viewport dimensions (remove the dimension of the div)
-    var h = $(window).height() - 50;
-    var w = $(window).width() - 50;
+    var h = $(window).height() - 5;
+    var w = $(window).width() - 5;
     var nh = Math.floor(Math.random() * h);
     var nw = Math.floor(Math.random() * w);
     return [nh,nw];
@@ -29,7 +29,6 @@ function inherit(proto) {
 
 var Vehicle = function(name) {
 	this.name = name;
-//  this.move();
 };
 
 Vehicle.prototype = {
@@ -47,7 +46,7 @@ Vehicle.prototype = {
     else if (this.name.indexOf('motorcycle') > -1) var oName = 'motorcycle';
     else if (this.name.indexOf('tank') > -1) var oName = 'tank';
     var idNum = eval( oName + "Count++;" );
-    $('body').append('<div class="' + oName + '" id="' + oName + idNum.toString() + '" style="top:' + pos[0].toString() + 'px;left:' + pos[1].toString() + 'px"></div>' );
+    $('body').append('<div class="vehicle ' + oName + '" id="' + oName + idNum.toString() + '" style="top:' + pos[0].toString() + 'px;left:' + pos[1].toString() + 'px"></div>' );
   },
 	remove: function() {
 		console.log("Moving " + this.name);
@@ -96,6 +95,16 @@ function Tank(name){
 Tank.prototype = inherit(Vehicle.prototype);
 Tank.prototype.health = 10;
 Tank.prototype.speed = 0.5;
+
+function CheckForCollisions() {
+	var div_list = $('.vehicle');
+	console.log(div_list.length);
+	for (var i=0; i<div_list.length; i++ ) {
+		for ( j=i+1; j<div_list.length; j++ ) {
+			
+		}
+	}
+}
 
 $(document).ready(function(){
 
