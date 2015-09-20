@@ -46,7 +46,7 @@ Vehicle.prototype = {
     else if (this.name.indexOf('motorcycle') > -1) var oName = 'motorcycle';
     else if (this.name.indexOf('tank') > -1) var oName = 'tank';
     var idNum = eval( oName + "Count++;" );
-    $('body').append('<div class="vehicle ' + oName + '" id="' + oName + idNum.toString() + '" style="top:' + pos[0].toString() + 'px;left:' + pos[1].toString() + 'px"></div>' );
+    $('body').append('<div class="vehicle ' + oName + '" id="' + oName + idNum.toString() + '" style="top:' + pos[0].toString() + 'px;left:' + pos[1].toString() + 'px"><span></span></div>' );
   },
 	remove: function() {
 		console.log("Moving " + this.name);
@@ -101,7 +101,12 @@ function CheckForCollisions() {
 	console.log(div_list.length);
 	for (var i=0; i<div_list.length; i++ ) {
 		for ( j=i+1; j<div_list.length; j++ ) {
-			
+			console.log(div_list[i] + " " + div_list[j]);
+			if ( (div_list[i].offset().top - div_list[j].offset().top).abs() <= 50 && (div_list[i].offset().left - div_list[j].offset().left).abs() <= 50 ) {
+				// we have a collision, check colliding with lists and add each to their lists if not present and call damage if not in the colliding with lists
+			} else if ( (div_list[i].offset().top - div_list[j].offset().top).abs() > 50 || (div_list[i].offset().left - div_list[j].offset().left).abs() > 50 ) {
+				// these two divs are not in collision, check their colliding with list and remove each from their lists if present
+			}
 		}
 	}
 }
@@ -123,5 +128,7 @@ $(document).ready(function(){
   $('#newTank').click(function(){
     eval( "var tank" + tankCount.toString() + " = new Tank('tank" + tankCount.toString() + "');" );
   });
+	
+	setInterval(CheckForCollisions, 100);
 
 });
