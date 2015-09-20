@@ -97,14 +97,28 @@ Tank.prototype.health = 10;
 Tank.prototype.speed = 0.5;
 
 function CheckForCollisions() {
-	var div_list = $('.vehicle');
-	console.log(div_list.length);
+	var div_list = $('.vehicle'), iPos, jPos, iTopPos, jTopPos, iLeftPos, jLeftPos, iId, jId, topDiff, leftDiff;
+	// console.log(div_list.length);
 	for (var i=0; i<div_list.length; i++ ) {
+		// console.log(div_list[i]);
+		// console.log($(div_list[i]).offset());
+		// console.log($(div_list[i]).attr('id'));
 		for ( j=i+1; j<div_list.length; j++ ) {
-			console.log(div_list[i] + " " + div_list[j]);
-			if ( (div_list[i].offset().top - div_list[j].offset().top).abs() <= 50 && (div_list[i].offset().left - div_list[j].offset().left).abs() <= 50 ) {
+			iPos = $(div_list[i]).offset();
+			jPos = $(div_list[j]).offset();
+			iTopPos = iPos.top;
+			jTopPos = jPos.top;
+			iLeftPos = iPos.left;
+			jLeftPos = jPos.left;
+			iId = $(div_list[i]).attr('id');
+			jId = $(div_list[j]).attr('id')
+			topDiff = Math.abs(iTopPos - jTopPos);
+			leftDiff = Math.abs(iLeftPos - jLeftPos);
+			// console.log(div_list[i] + " " + div_list[j]);
+			if ( topDiff <= 50 && leftDiff <= 50 ) {
+				console.log("collision detected")
 				// we have a collision, check colliding with lists and add each to their lists if not present and call damage if not in the colliding with lists
-			} else if ( (div_list[i].offset().top - div_list[j].offset().top).abs() > 50 || (div_list[i].offset().left - div_list[j].offset().left).abs() > 50 ) {
+			} else if ( topDiff > 50 || leftDiff > 50 ) {
 				// these two divs are not in collision, check their colliding with list and remove each from their lists if present
 			}
 		}
