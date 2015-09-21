@@ -2,6 +2,10 @@ var carCount = 0;
 var copcarCount = 0;
 var motorcycleCount = 0;
 var tankCount = 0;
+var nameCount = 0;
+var vehicleCount = 0;
+var vehicles = [];
+var CheckCount = 0;
 
 function makeNewPosition(){
     // Get viewport dimensions (remove the dimension of the div)
@@ -33,116 +37,175 @@ var Vehicle = function(name) {
 
 Vehicle.prototype = {
 	move: function() {
-    var div_ref = $('#'+this.name);
-    var newq = makeNewPosition();
-    var oldq = div_ref.offset();
-    var speed = calcSpeed([oldq.top, oldq.left], newq);
-    div_ref.animate({ top: newq[0], left: newq[1] }, speed, this.move.bind(this));
+		var div_ref = $('#'+this.name);
+		var newq = makeNewPosition();
+		var oldq = div_ref.offset();
+		if ( oldq == undefined ) return;
+		var speed = calcSpeed([oldq.top, oldq.left], newq);
+		div_ref.animate({ top: newq[0], left: newq[1] }, speed, this.move.bind(this));
 	},
-  addDiv: function() {
-    var pos = makeNewPosition();
-    if (this.name.indexOf('copcar') > -1) var oName = 'copcar';
-    else if (this.name.indexOf('car') > -1) var oName = 'car';
-    else if (this.name.indexOf('motorcycle') > -1) var oName = 'motorcycle';
-    else if (this.name.indexOf('tank') > -1) var oName = 'tank';
-    var idNum = eval( oName + "Count++;" );
-    $('body').append('<div class="vehicle ' + oName + '" id="' + oName + idNum.toString() + '" style="top:' + pos[0].toString() + 'px;left:' + pos[1].toString() + 'px"><span></span></div>' );
-  },
+	// addDiv: function() {
+	// 	var pos = makeNewPosition();
+	// 	if (this.name.indexOf('copcar') > -1) var oName = 'copcar';
+	// 	else if (this.name.indexOf('car') > -1) var oName = 'car';
+	// 	else if (this.name.indexOf('motorcycle') > -1) var oName = 'motorcycle';
+	// 	else if (this.name.indexOf('tank') > -1) var oName = 'tank';
+	// 	var idNum = eval( oName + "Count++;" );
+	// 	$('body').append('<div class="vehicle ' + oName + '" id="' + oName + idNum.toString() + '" style="top:' + pos[0].toString() + 'px;left:' + pos[1].toString() + 'px"><span></span></div>' );
+	// },
 	remove: function() {
 		console.log("Moving " + this.name);
 	},
 	damage: function() {
-		// if (this.health === 0 ) this.remove;
-		// else this.health -= 1;
-		console.log("Damaging vehicle");
+		this.health--;
+		$('#'+this.name).html(this.health.toString());
 	},
 	health: 0,
-	speed: 1
+	speed: 1,
+	collidingWith: []
 }
 
 function Car(name){
 	this.name = name;
-  this.addDiv();
-  this.move();
+	this.addDiv();
+	this.move();
 };
 Car.prototype = inherit(Vehicle.prototype);
 Car.prototype.health = 2;
 Car.prototype.reverse = false;
+Car.prototype.addDiv = function() {
+	var pos = makeNewPosition();
+	$('body').append('<div class="vehicle car" id="' + this.name + '" style="top:' + pos[0].toString() + 'px;left:' + pos[1].toString() + 'px">' + this.health + '</div>' );
+};
 
 function CopCar(name){
 	this.name = name;
-  this.addDiv();
-  this.move();
+	this.addDiv();
+	this.move();
 };
 CopCar.prototype = inherit(Car.prototype);
 CopCar.prototype.health = 3;
 CopCar.prototype.siren_interval = 500;
+CopCar.prototype.addDiv = function() {
+	var pos = makeNewPosition();
+	$('body').append('<div class="vehicle copcar" id="' + this.name + '" style="top:' + pos[0].toString() + 'px;left:' + pos[1].toString() + 'px">' + this.health + '</div>' );
+};
 
 function Motorcycle(name){
 	this.name = name;
-  this.addDiv();
-  this.move();
+	this.addDiv();
+	this.move();
 };
 Motorcycle.prototype = inherit(Vehicle.prototype);
 Motorcycle.prototype.health = 1;
 Motorcycle.prototype.speed = 2;
+Motorcycle.prototype.addDiv = function() {
+	var pos = makeNewPosition();
+	$('body').append('<div class="vehicle motorcycle" id="' + this.name + '" style="top:' + pos[0].toString() + 'px;left:' + pos[1].toString() + 'px">' + this.health + '</div>' );
+};
 
 function Tank(name){
 	this.name = name;
-  this.addDiv();
-  this.move();
+	this.addDiv();
+	this.move();
 };
 Tank.prototype = inherit(Vehicle.prototype);
 Tank.prototype.health = 10;
 Tank.prototype.speed = 0.5;
+Tank.prototype.addDiv = function() {
+	var pos = makeNewPosition();
+	$('body').append('<div class="vehicle tank" id="' + this.name + '" style="top:' + pos[0].toString() + 'px;left:' + pos[1].toString() + 'px">' + this.health + '</div>' );
+};
 
 function CheckForCollisions() {
-	var div_list = $('.vehicle'), iPos, jPos, iTopPos, jTopPos, iLeftPos, jLeftPos, iId, jId, topDiff, leftDiff;
-	// console.log(div_list.length);
-	for (var i=0; i<div_list.length; i++ ) {
-		// console.log(div_list[i]);
-		// console.log($(div_list[i]).offset());
-		// console.log($(div_list[i]).attr('id'));
-		for ( j=i+1; j<div_list.length; j++ ) {
-			iPos = $(div_list[i]).offset();
-			jPos = $(div_list[j]).offset();
+//	console.log(++CheckCount);
+	var removed_vehicles_indices = [];
+	var iPos, jPos, iTopPos, jTopPos, iLeftPos, jLeftPos, iId, jId, topDiff, leftDiff, widthCheck, heightCheck, indexOfJ, indexOfI;
+	for (var i=0; i<vehicles.length; i++ ) {
+		for ( j=i+1; j<vehicles.length; j++ ) {
+			iPos = $('#'+vehicles[i].name).offset();
+			jPos = $('#'+vehicles[j].name).offset();
 			iTopPos = iPos.top;
 			jTopPos = jPos.top;
 			iLeftPos = iPos.left;
 			jLeftPos = jPos.left;
-			iId = $(div_list[i]).attr('id');
-			jId = $(div_list[j]).attr('id')
+			if ( iTopPos <= jTopPos ) heightCheck = $('#'+vehicles[i].name).height();
+			else heightCheck = $('#'+vehicles[j].name).height();
+			if ( iLeftPos <= jLeftPos ) widthCheck = $('#'+vehicles[i].name).width();
+			else widthCheck = $('#'+vehicles[j].name).width();
 			topDiff = Math.abs(iTopPos - jTopPos);
 			leftDiff = Math.abs(iLeftPos - jLeftPos);
-			// console.log(div_list[i] + " " + div_list[j]);
-			if ( topDiff <= 50 && leftDiff <= 50 ) {
-				console.log("collision detected")
-				// we have a collision, check colliding with lists and add each to their lists if not present and call damage if not in the colliding with lists
-			} else if ( topDiff > 50 || leftDiff > 50 ) {
-				// these two divs are not in collision, check their colliding with list and remove each from their lists if present
+			iId = $('#'+vehicles[i].name).attr('id');
+			jId = $('#'+vehicles[j].name).attr('id');
+			indexOfJ = vehicles[i].collidingWith.indexOf(jId);			
+			indexOfI = vehicles[j].collidingWith.indexOf(iId);
+			if ( topDiff <= heightCheck && leftDiff <= widthCheck ) {
+				if ( indexOfJ == -1 ) {
+					vehicles[i].collidingWith.push(jId);
+					vehicles[i].damage();
+					if ( vehicles[i].health === 0 ) {
+						$('#' + vehicles[i].name).remove();
+						removed_vehicles_indices.push(i);
+						vehicles[j].collidingWith.splice(indexOfI,1);
+					}
+				}
+				if ( indexOfJ == -1 ) {
+					vehicles[j].collidingWith.push(iId);
+					vehicles[j].damage();
+					if ( vehicles[j].health === 0 ) {
+						$('#' + vehicles[j].name).remove();
+						removed_vehicles_indices.push(j);
+						vehicles[i].collidingWith.splice(indexOfJ,1);
+						i++;
+					}
+				}
+			} else {
+				if ( indexOfJ != -1 && indexOfI != -1 ) {
+					console.log("removing collision");
+					console.log(vehicles[i].collidingWith);
+					console.log(vehicles[j].collidingWith);
+					vehicles[i].collidingWith.splice(indexOfJ,1);
+					vehicles[j].collidingWith.splice(indexOfI,1);
+				}
 			}
 		}
+	}
+	for (var k = removed_vehicles_indices.length -1; k >= 0; k--) {
+		vehicles.splice(removed_vehicles_indices[k],1);
+		vehicleCount--;
 	}
 }
 
 $(document).ready(function(){
 
-  $('#newCar').click(function(){
-    eval( "var car" + carCount.toString() + " = new Car('car" + carCount.toString() + "');" );
-  });
+	$('#newCar').click(function(){
+		// eval( "var car" + carCount.toString() + " = new Car('car" + carCount.toString() + "');" );
+		vehicles[vehicleCount] = new Car('v' + nameCount.toString());
+		vehicleCount++;
+		nameCount++;
+	});
 
-  $('#newCopcar').click(function(){
-    eval( "var copcar" + copcarCount.toString() + " = new CopCar('copcar" + copcarCount.toString() + "');" );
-  });
+	$('#newCopcar').click(function(){
+		// eval( "var copcar" + copcarCount.toString() + " = new CopCar('copcar" + copcarCount.toString() + "');" );
+		vehicles[vehicleCount] = new CopCar('v' + nameCount.toString());
+		vehicleCount++;	
+		nameCount++;
+	});
 
-  $('#newMotorcycle').click(function(){
-    eval( "var motorcycle" + motorcycleCount.toString() + " = new Motorcycle('motorcycle" + motorcycleCount.toString() + "');" );
-  });
+	$('#newMotorcycle').click(function(){
+		// eval( "var motorcycle" + motorcycleCount.toString() + " = new Motorcycle('motorcycle" + motorcycleCount.toString() + "');" );
+		vehicles[vehicleCount] = new Motorcycle('v' + nameCount.toString());
+		vehicleCount++;	
+		nameCount++;
+	});
 
-  $('#newTank').click(function(){
-    eval( "var tank" + tankCount.toString() + " = new Tank('tank" + tankCount.toString() + "');" );
-  });
+	$('#newTank').click(function(){
+		// eval( "var tank" + tankCount.toString() + " = new Tank('tank" + tankCount.toString() + "');" );
+		vehicles[vehicleCount] = new Tank('v' + nameCount.toString());
+		vehicleCount++;	
+		nameCount++;
+	});
 	
-	setInterval(CheckForCollisions, 100);
+	setInterval(CheckForCollisions.bind(this), 100);
 
 });
